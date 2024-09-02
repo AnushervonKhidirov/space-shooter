@@ -1,4 +1,4 @@
-import type { TCoordinate } from './types.js'
+import type { TCoordinate, TImageForLoad } from './types.js'
 
 class SpaceShooter {
     gameWrapper: Element
@@ -6,13 +6,15 @@ class SpaceShooter {
     canvasHeight = 900
     canvas: HTMLCanvasElement
     context: CanvasRenderingContext2D
+    images: TImageForLoad[]
+
+    gameBG = new Image()
 
     // keys
-    // keyPressed = false
     keyPressed: { [key: string]: boolean }
 
     // ship
-    ship: HTMLImageElement
+    ship = new Image()
     shipPosition: TCoordinate
     shootingInterval: any
     shipSize = 50
@@ -29,11 +31,21 @@ class SpaceShooter {
         this.canvas = document.createElement('canvas')
         this.context = this.canvas.getContext('2d')!
 
+        this.images = [
+            {
+                elem: this.gameBG,
+                src: './image/game-bg.jpg',
+            },
+            {
+                elem: this.ship,
+                src: './image/space-ship-level-1.png',
+            },
+        ]
+
         this.keyPressed = {}
         this.bullets = []
         this.shouldChangeBulletSide = false
 
-        this.ship = new Image()
         this.shipPosition = {
             x: (this.canvasWidth - this.shipSize) / 2,
             y: this.canvasHeight - this.shipSize * 2,
@@ -50,27 +62,28 @@ class SpaceShooter {
         this.canvas.height = this.canvasHeight
         this.gameWrapper.appendChild(this.canvas)
 
-        this.ship.src = './image/space-ship-level-1.png'
+        this.loadImages(this.images)
+    }
 
-        this.ship.addEventListener('load', () => {
-            this.drawAnimation()
-        })
+    loadImages(images: TImageForLoad[], index: number = 0) {
+        if (index >= images.length) return this.drawAnimation()
+        
+        images[index].elem.src = images[index].src
+
+        images[index].elem.addEventListener('load', () => this.loadImages(images, index + 1))
     }
 
     drawAnimation() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
-        this.drawBorder()
+        this.drawBackground()
         this.drawShip()
 
         requestAnimationFrame(() => this.drawAnimation())
     }
 
-    drawBorder() {
-        this.context.save()
-        this.context.strokeStyle = '#000'
-        this.context.strokeRect(0, 0, this.canvas.width, this.canvas.height)
-        this.context.restore()
+    drawBackground() {
+        this.context.drawImage(this.gameBG, 0, 0, this.canvasWidth, this.canvasHeight)
     }
 
     drawShip() {
@@ -91,7 +104,7 @@ class SpaceShooter {
 
         window.addEventListener('keyup', (e: KeyboardEvent) => {
             this.keyPressed[e.code] = false
-            
+
             if (!this.keyPressed['ArrowLeft'] && !this.keyPressed['ArrowRight']) this.shipMoveSize = 0
             if (!this.keyPressed['Space']) clearInterval(this.shootingInterval)
         })
