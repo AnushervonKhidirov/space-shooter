@@ -13,6 +13,7 @@ class Ship {
     shipSize = 50
     shipSpeed = 5
     shipMoveSize = 0
+    shouldMove = false
 
     // bullets
     bulletSpeed = 10
@@ -42,9 +43,9 @@ class Ship {
     }
 
     drawShip() {
-        this.movingShip()
         this.context.drawImage(this.ship, this.shipPosition.x, this.shipPosition.y, this.shipSize, this.shipSize)
         if (this.bullets.length > 0) this.sooting()
+        if (this.shouldMove) this.movingShip()
     }
 
     addShipController() {
@@ -59,16 +60,21 @@ class Ship {
         window.addEventListener('keyup', (e: KeyboardEvent) => {
             this.keyPressed[e.code] = false
 
-            if (!this.keyPressed['ArrowLeft'] && !this.keyPressed['ArrowRight']) this.shipMoveSize = 0
+            if (!this.keyPressed['ArrowLeft'] && !this.keyPressed['ArrowRight']) {
+                this.shouldMove = false
+                this.shipMoveSize = 0
+            }
             if (!this.keyPressed['Space']) clearInterval(this.shootingInterval)
         })
     }
 
     moveLeft() {
+        this.shouldMove = true
         this.shipMoveSize = -this.shipSpeed
     }
 
     moveRight() {
+        this.shouldMove = true
         this.shipMoveSize = this.shipSpeed
     }
 
